@@ -1,0 +1,62 @@
+<div class="row">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white font-weight-bold">Gestión de Productos / Servicios</div>
+      <div class="card-body">
+        <form (ngSubmit)="saveProducto()">
+          <div class="mb-3">
+            <label>Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedProducto.nombre" name="nombre" required>
+          </div>
+          <div class="mb-3">
+            <label>Categoría</label>
+            <select class="form-select" [(ngModel)]="selectedProducto.categoria" name="categoria">
+              <option value="Producto">Producto</option>
+              <option value="Servicio">Servicio</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Precio ($)</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProducto.precio" name="precio" required>
+          </div>
+          <div class="mb-3">
+            <label>Stock / Disponibilidad</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProducto.stock" name="stock" required>
+          </div>
+          <div class="mb-3">
+            <label>Descripción</label>
+            <textarea class="form-control" [(ngModel)]="selectedProducto.descripcion" name="descripcion" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-success me-2">Guardar</button>
+          <button type="button" class="btn btn-secondary" (click)="resetForm()">Limpiar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <table class="table table-striped border">
+      <thead class="table-dark">
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of productos">
+          <td>{{ p.nombre }}</td>
+          <td><span class="badge bg-secondary">{{ p.categoria }}</span></td>
+          <td>${{ p.precio }}</td>
+          <td>{{ p.stock }}</td>
+          <td>
+            <button class="btn btn-warning btn-sm me-1" (click)="editProducto(p)">Editar</button>
+            <button class="btn btn-danger btn-sm" (click)="deleteProducto(p._id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

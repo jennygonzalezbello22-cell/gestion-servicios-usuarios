@@ -1,0 +1,26 @@
+<nav class="navbar navbar-dark bg-dark mb-4 shadow">
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1">Sistema de Gestión </span>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Botones de Navegación -->
+  <div class="btn-group mb-4" role="group">
+    <button type="button" class="btn" [ngClass]="activeTab === 'usuarios' ? 'btn-primary' : 'btn-outline-primary'" (click)="activeTab = 'usuarios'">
+      Gestión de Usuarios
+    </button>
+    <button type="button" class="btn" [ngClass]="activeTab === 'productos' ? 'btn-success' : 'btn-outline-success'" (click)="activeTab = 'productos'">
+      Gestión de Productos y Servicios
+    </button>
+  </div>
+
+  <!-- Contenido dinámico -->
+  <div *ngIf="activeTab === 'usuarios'">
+    <app-usuarios></app-usuarios>
+  </div>
+
+  <div *ngIf="activeTab === 'productos'">
+    <app-productos></app-productos>
+  </div>
+</div>

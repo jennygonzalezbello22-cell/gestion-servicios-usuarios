@@ -1,55 +1,62 @@
-const Producto = require('../models/Producto');
+const pool = require('../database');
 const productoCtrl = {};
 
 // Obtener todos los productos
 productoCtrl.getProductos = async (req, res) => {
     try {
-        const productos = await Producto.find();
-        res.json(productos);
+        const [rows] = await pool.query('SELECT * FROM productos');
+        res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// Crear producto
+// Crear un producto
 productoCtrl.createProducto = async (req, res) => {
     try {
-        const producto = new Producto(req.body);
-        await producto.save();
-        res.json({ status: 'Producto/Servicio creado exitosamente' });
+        const { nombre, categoria, precio, stock, descripcion } = req.body;
+        const [result] = await pool.query(
+            'INSERT INTO productos (nombre, categoria, precio, stock, descripcion) VALUES (?, ?, ?, ?, ?)',
+            [nombre, categoria, precio, stock, descripcion]
+        );
+        res.json({ status: 'Producto guardado exitosamente', id: result.insertId });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Obtener producto por ID
+// Obtener un producto por ID
 productoCtrl.getProducto = async (req, res) => {
     try {
-        const producto = await Producto.findById(req.params.id);
-        res.json(producto);
+        const [rows] = await pool.query('SELECT * FROM productos WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ message: 'Producto no encontrado' });
+        res.json(rows[0]);
     } catch (error) {
-        res.status(404).json({ message: 'Producto no encontrado' });
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Editar producto
+// Actualizar un producto
 productoCtrl.editProducto = async (req, res) => {
     try {
-        const { id } = req.params;
-        await Producto.findByIdAndUpdate(id, { $set: req.body }, { new: true });
-        res.json({ status: 'Producto/Servicio actualizado exitosamente' });
+        const { nombre, categoria, precio, stock, descripcion } = req.body;
+        await pool.query(
+            'UPDATE productos SET nombre = ?, categoria = ?, precio = ?, stock = ?, descripcion = ? WHERE id = ?',
+            [nombre, categoria, precio, stock, descripcion, req.params.id]
+        );
+        res.json({ status: 'Producto actualizado exitosamente' });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Eliminar producto
+// Eliminar un producto
 productoCtrl.deleteProducto = async (req, res) => {
     try {
-        await Producto.findByIdAndDelete(req.params.id);
-        res.json({ status: 'Producto/Servicio eliminado exitosamente' });
+        await pool.query('DELETE FROM productos WHERE id = ?', [req.params.id]);
+        res.json({ status: 'Producto eliminado exitosamente' });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 

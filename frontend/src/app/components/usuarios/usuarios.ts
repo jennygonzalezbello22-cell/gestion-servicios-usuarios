@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../services/usuario';
@@ -8,47 +8,73 @@ import { Usuario } from '../../models/usuario';
   selector: 'app-usuarios',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './usuarios.html'
+  templateUrl: './usuarios.html',
+  styleUrls: ['./usuarios.css']
 })
 export class UsuariosComponent implements OnInit {
-  private usuarioService = inject(UsuarioService);
 
   usuarios: Usuario[] = [];
-  selectedUsuario: Usuario = { nombre: '', email: '', password: '', rol: 'Cliente' };
+
+  selectedUsuario: Usuario = {
+    nombre: '',
+    email: '',
+    password: ''
+  };
+
+  constructor(public usuarioService: UsuarioService) {}
 
   ngOnInit(): void {
-    this.getUsuarios();
+    this.obtenerUsuarios();
   }
 
-  getUsuarios(): void {
-    this.usuarioService.getUsuarios().subscribe((res: Usuario[]) => this.usuarios = res);
+  obtenerUsuarios() {
+    this.usuarioService.getUsuarios().subscribe({
+      next: (res) => {
+        this.usuarios = res;
+      },
+      error: (err) => console.error('Error al obtener usuarios:', err)
+    });
   }
 
-  saveUsuario(): void {
-    if (this.selectedUsuario._id) {
-      this.usuarioService.updateUsuario(this.selectedUsuario).subscribe(() => {
-        this.resetForm();
-        this.getUsuarios();
+  guardarUsuario() {
+    if (this.selectedUsuario.id) {
+      this.usuarioService.updateUsuario(this.selectedUsuario).subscribe({
+        next: () => {
+          this.obtenerUsuarios();
+          this.limpiarFormulario();
+        },
+        error: (err) => console.error('Error al actualizar usuario:', err)
       });
     } else {
-      this.usuarioService.createUsuario(this.selectedUsuario).subscribe(() => {
-        this.resetForm();
-        this.getUsuarios();
+      this.usuarioService.createUsuario(this.selectedUsuario).subscribe({
+        next: () => {
+          this.obtenerUsuarios();
+          this.limpiarFormulario();
+        },
+        error: (err) => console.error('Error al registrar usuario:', err)
       });
     }
   }
 
-  editUsuario(usuario: Usuario): void {
+  editarUsuario(usuario: Usuario) {
     this.selectedUsuario = { ...usuario };
   }
 
-  deleteUsuario(id?: string): void {
-    if (id && confirm('¿Desea eliminar este usuario?')) {
-      this.usuarioService.deleteUsuario(id).subscribe(() => this.getUsuarios());
+  eliminarUsuario(id: number | undefined) {
+    if (!id) return;
+    if (confirm('¿Estás seguro de eliminar este usuario?')) {
+      this.usuarioService.deleteUsuario(id).subscribe({
+        next: () => this.obtenerUsuarios(),
+        error: (err) => console.error('Error al eliminar usuario:', err)
+      });
     }
   }
 
-  resetForm(): void {
-    this.selectedUsuario = { nombre: '', email: '', password: '', rol: 'Cliente' };
+  limpiarFormulario() {
+    this.selectedUsuario = {
+      nombre: '',
+      email: '',
+      password: ''
+    };
   }
 }

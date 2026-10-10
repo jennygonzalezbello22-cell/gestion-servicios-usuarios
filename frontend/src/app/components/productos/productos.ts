@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductoService } from '../../services/producto';
@@ -8,47 +8,80 @@ import { Producto } from '../../models/producto';
   selector: 'app-productos',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './productos.html'
+  templateUrl: './productos.html',
+  styleUrls: ['./productos.css']
 })
 export class ProductosComponent implements OnInit {
-  private productoService = inject(ProductoService);
-
+  
   productos: Producto[] = [];
-  selectedProducto: Producto = { nombre: '', categoria: 'Producto', precio: 0, stock: 0, descripcion: '' };
+  
+  // Modelo para el formulario
+  selectedProducto: Producto = {
+    nombre: '',
+    categoria: '',
+    precio: 0,
+    stock: 0,
+    descripcion: ''
+  };
+
+  constructor(public productoService: ProductoService) {}
 
   ngOnInit(): void {
-    this.getProductos();
+    this.obtenerProductos();
   }
 
-  getProductos(): void {
-    this.productoService.getProductos().subscribe(res => this.productos = res);
+  obtenerProductos() {
+    this.productoService.getProductos().subscribe({
+      next: (res) => {
+        this.productos = res;
+      },
+      error: (err) => console.error('Error al obtener productos:', err)
+    });
   }
 
-  saveProducto(): void {
-    if (this.selectedProducto._id) {
-      this.productoService.updateProducto(this.selectedProducto).subscribe(() => {
-        this.resetForm();
-        this.getProductos();
+  guardarProducto() {
+    if (this.selectedProducto.id) {
+      // Actualizar
+      this.productoService.updateProducto(this.selectedProducto).subscribe({
+        next: () => {
+          this.obtenerProductos();
+          this.limpiarFormulario();
+        },
+        error: (err) => console.error('Error al actualizar:', err)
       });
     } else {
-      this.productoService.createProducto(this.selectedProducto).subscribe(() => {
-        this.resetForm();
-        this.getProductos();
+      // Crear nuevo
+      this.productoService.createProducto(this.selectedProducto).subscribe({
+        next: () => {
+          this.obtenerProductos();
+          this.limpiarFormulario();
+        },
+        error: (err) => console.error('Error al guardar:', err)
       });
     }
   }
 
-  editProducto(producto: Producto): void {
+  editarProducto(producto: Producto) {
     this.selectedProducto = { ...producto };
   }
 
-  deleteProducto(id?: string): void {
-    if (id && confirm('¿Desea eliminar este registro?')) {
-      this.productoService.deleteProducto(id).subscribe(() => this.getProductos());
+  eliminarProducto(id: number | undefined) {
+    if (!id) return;
+    if (confirm('¿Estás seguro de eliminar este producto?')) {
+      this.productoService.deleteProducto(id).subscribe({
+        next: () => this.obtenerProductos(),
+        error: (err) => console.error('Error al eliminar:', err)
+      });
     }
   }
 
-  resetForm(): void {
-    this.selectedProducto = { nombre: '', categoria: 'Producto', precio: 0, stock: 0, descripcion: '' };
+  limpiarFormulario() {
+    this.selectedProducto = {
+      nombre: '',
+      categoria: '',
+      precio: 0,
+      stock: 0,
+      descripcion: ''
+    };
   }
 }

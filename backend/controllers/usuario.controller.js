@@ -1,55 +1,63 @@
-const Usuario = require('../models/Usuario');
+const pool = require('../database');
 const usuarioCtrl = {};
 
 // Obtener todos los usuarios
-usuarioCtrl.getUsuarios = async (req, res) => {
+ususarioCtrlGet = async (req, res) => {
     try {
-        const usuarios = await Usuario.find({}, { password: 0 });
-        res.json(usuarios);
+        const [rows] = await pool.query('SELECT id, nombre, email FROM usuarios');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+usuarioCtrl.getUsuarios = ususarioCtrlGet;
+
+// Crear un usuario
+usuarioCtrl.createUsuario = async (req, res) => {
+    try {
+        const { nombre, email, password } = req.body;
+        const [result] = await pool.query(
+            'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)',
+            [nombre, email, password]
+        );
+        res.json({ status: 'Usuario registrado exitosamente', id: result.insertId });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// Crear usuario
-usuarioCtrl.createUsuario = async (req, res) => {
-    try {
-        const usuario = new Usuario(req.body);
-        await usuario.save();
-        res.json({ status: 'Usuario creado exitosamente' });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
-
-// Obtener usuario por ID
+// Obtener un usuario por ID
 usuarioCtrl.getUsuario = async (req, res) => {
     try {
-        const usuario = await Usuario.findById(req.params.id, { password: 0 });
-        res.json(usuario);
+        const [rows] = await pool.query('SELECT id, nombre, email FROM usuarios WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
+        res.json(rows[0]);
     } catch (error) {
-        res.status(404).json({ message: 'Usuario no encontrado' });
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Editar usuario
+// Actualizar un usuario
 usuarioCtrl.editUsuario = async (req, res) => {
     try {
-        const { id } = req.params;
-        await Usuario.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+        const { nombre, email, password } = req.body;
+        await pool.query(
+            'UPDATE usuarios SET nombre = ?, email = ?, password = ? WHERE id = ?',
+            [nombre, email, password, req.params.id]
+        );
         res.json({ status: 'Usuario actualizado exitosamente' });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Eliminar usuario
+// Eliminar un usuario
 usuarioCtrl.deleteUsuario = async (req, res) => {
     try {
-        await Usuario.findByIdAndDelete(req.params.id);
+        await pool.query('DELETE FROM usuarios WHERE id = ?', [req.params.id]);
         res.json({ status: 'Usuario eliminado exitosamente' });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 

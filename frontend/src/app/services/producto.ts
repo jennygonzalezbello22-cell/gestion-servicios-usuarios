@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Producto } from '../models/producto';
@@ -7,8 +7,9 @@ import { Producto } from '../models/producto';
   providedIn: 'root'
 })
 export class ProductoService {
-  private http = inject(HttpClient);
-  readonly URL_API = 'http://localhost:3000/api/productos';
+  private URL_API = 'http://localhost:3000/api/productos';
+
+  constructor(private http: HttpClient) {}
 
   getProductos(): Observable<Producto[]> {
     return this.http.get<Producto[]>(this.URL_API);
@@ -19,10 +20,10 @@ export class ProductoService {
   }
 
   updateProducto(producto: Producto): Observable<any> {
-    return this.http.put(`${this.URL_API}/${producto._id}`, producto);
+    return this.http.put(`${this.URL_API}/${producto.id}`, producto);
   }
 
-  deleteProducto(_id: string): Observable<any> {
-    return this.http.delete(`${this.URL_API}/${_id}`);
+  deleteProducto(id: number): Observable<any> {
+    return this.http.delete(`${this.URL_API}/${id}`);
   }
 }

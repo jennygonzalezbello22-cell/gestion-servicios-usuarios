@@ -13,12 +13,14 @@
           <label>Correo Electrónico</label>
           <input type="email" class="form-control" [(ngModel)]="selectedUsuario.email" name="email" required>
         </div>
-        <div class="col-md-4 mb-3" *ngIf="!selectedUsuario.id">
-          <label>Contraseña</label>
-          <input type="password" class="form-control" [(ngModel)]="selectedUsuario.password" name="password" required>
+        <div class="col-md-4 mb-3">
+          <label>Contraseña <span *ngIf="selectedUsuario.id">(Déjalo en blanco para mantener la actual)</span></label>
+          <input type="password" class="form-control" [(ngModel)]="selectedUsuario.password" name="password" [required]="!selectedUsuario.id">
         </div>
       </div>
-      <button type="submit" class="btn btn-success me-2">Guardar Usuario</button>
+      <button type="submit" class="btn btn-success me-2">
+        {{ selectedUsuario.id ? 'Actualizar Usuario' : 'Guardar Usuario' }}
+      </button>
       <button type="button" class="btn btn-secondary" (click)="limpiarFormulario()">Cancelar / Limpiar</button>
     </form>
   </div>

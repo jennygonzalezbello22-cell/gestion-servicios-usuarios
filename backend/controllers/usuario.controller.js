@@ -2,7 +2,7 @@ const pool = require('../database');
 const usuarioCtrl = {};
 
 // Obtener todos los usuarios
-ususarioCtrlGet = async (req, res) => {
+usuarioCtrl.getUsuarios = async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT id, nombre, email FROM usuarios');
         res.json(rows);
@@ -10,7 +10,6 @@ ususarioCtrlGet = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-usuarioCtrl.getUsuarios = ususarioCtrlGet;
 
 // Crear un usuario
 usuarioCtrl.createUsuario = async (req, res) => {
@@ -41,10 +40,20 @@ usuarioCtrl.getUsuario = async (req, res) => {
 usuarioCtrl.editUsuario = async (req, res) => {
     try {
         const { nombre, email, password } = req.body;
-        await pool.query(
-            'UPDATE usuarios SET nombre = ?, email = ?, password = ? WHERE id = ?',
-            [nombre, email, password, req.params.id]
-        );
+        
+        if (password && password.trim() !== '') {
+            // Si se envió una contraseña nueva, la actualizamos
+            await pool.query(
+                'UPDATE usuarios SET nombre = ?, email = ?, password = ? WHERE id = ?',
+                [nombre, email, password, req.params.id]
+            );
+        } else {
+            // Si la contraseña viene vacía, actualizamos solo el nombre y el correo
+            await pool.query(
+                'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?',
+                [nombre, email, req.params.id]
+            );
+        }
         res.json({ status: 'Usuario actualizado exitosamente' });
     } catch (error) {
         res.status(500).json({ error: error.message });
